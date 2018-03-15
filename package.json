@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/gueei/node-ms5803#readme",
   "dependencies": {
-    "i2c": "^0.2.3"
+    "i2c": "^0.2.3",
+    "long": "^4.0.0"
   }
 }
