@@ -2,6 +2,7 @@ var ms5803 = require('.');
 
 var sensor = new ms5803();
 
+/*
 sensor.reset()
 	.then(sensor.begin)
 	.then((c)=>{
@@ -9,7 +10,7 @@ sensor.reset()
 	})
 	.then(()=>{
 		setInterval(()=>{
-				sensor.measure(0x08)
+				sensor.measure()
 				.then((r)=>{
 					console.log(r);
 				})
@@ -18,3 +19,16 @@ sensor.reset()
 	.catch((error)=>{
 		console.error(error);
 	});
+*/
+
+sensor.reset(function(){
+	sensor.begin(function(err, coefficient){
+		console.log(coefficient);
+
+		setInterval( function(){
+			sensor.measure(function(err, result){
+				console.log(result);
+			});
+		}, 1000);
+	});
+});

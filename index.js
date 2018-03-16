@@ -1,12 +1,13 @@
 
 module.exports = function  ms5803(addr=0x76){
 
+const sensor = function(){};
 const	CMD_RESET = 0x1E,
 	CMD_ADC_READ = 0x00,
 	CMD_ADC_CONV = 0x40,
 	CMD_PROM = 0xA0;
 	
-const PRECISION = {
+sensor.PRECISION = {
 	ADC_256: 0x00,
 	ADC_512: 0x02,
 	ADC_1024: 0x04,
@@ -14,17 +15,18 @@ const PRECISION = {
 	ADC_4096: 0x08
 }
 
-const MEASUREMENT = {
+sensor.MEASUREMENT = {
 	PRESSURE: 0x40,
 	TEMPERATURE: 0x50
 }
 
-var i2c = require('i2c');
-var Long = require('long');
-var sensor = function(){};
-var wire = new i2c(addr);
+const i2c = require('i2c');
+const Long = require('long');
+const wire = new i2c(addr);
+const nodeify = require('nodeify');
 
 sensor.coefficient = [];
+sensor.precision = sensor.PRECISION.ADC_2048;
 
 var writeBytes = function(command, bytes=[]){
 	return new Promise( (resolve, reject) => {
@@ -52,12 +54,12 @@ var delay = function(ms){
 	});
 }
 
-sensor.reset = function(){	
-	return writeBytes(CMD_RESET, []);
+sensor.reset = function(callback){	
+	return nodeify(writeBytes(CMD_RESET, []), callback);
 };
 
-sensor.begin = async function(){	
-	return new Promise(async (resolve, reject)=>{
+sensor.begin = async function(callback){	
+	var promise = new Promise(async (resolve, reject)=>{
 		sensor.coefficient = [0,0,0,0,0,0,0,0];
 		try{
 			for(var i=0; i<8; i++){
@@ -70,6 +72,7 @@ sensor.begin = async function(){
 			return reject();
 		}
 	});
+	return nodeify(promise, callback);
 }
 
 getADCConversion = async function (measurement, precision){
@@ -86,11 +89,15 @@ getADCConversion = async function (measurement, precision){
 	});
 }
 
-sensor.measure = async function(precision = PRECISION.ADC_2048){
-	return new Promise(async (resolve, reject)=>{
+sensor.setPrecision = function(precision){
+	sensor.precision = precision;
+}
+
+sensor.measure = async function(callback){
+	var promise = new Promise(async (resolve, reject)=>{
 		try{
-			var temp_raw = await getADCConversion(MEASUREMENT.TEMPERATURE, precision);
-			var pres_raw = await getADCConversion(MEASUREMENT.PRESSURE, precision);
+			var temp_raw = await getADCConversion(sensor.MEASUREMENT.TEMPERATURE, sensor.precision);
+			var pres_raw = await getADCConversion(sensor.MEASUREMENT.PRESSURE, sensor.precision);
 			var c = sensor.coefficient;
 			var dT = temp_raw - (c[5]<<8);
 			var temp_calc = (new Long(dT).mul(c[6]).shr(23).add(2000)).toNumber();
@@ -130,6 +137,8 @@ sensor.measure = async function(precision = PRECISION.ADC_2048){
 			return reject(exception);
 		}
 	});
+
+	return nodeify(promise, callback);
 }
 
 return sensor;
