@@ -1,6 +1,18 @@
-# node-ms5803
+# ms5803
 Use MS5803-14BA on nodejs, e.g. RPi or similar SBC
 Tested to run on Raspberry PI 3
+
+## Installation
+
+```bash
+npm install ms5803
+```
+
+```javascript
+var ms5803 = require('ms5803')
+
+var sensor = new ms5803();
+```
 
 ## Usage
 This module supports both Promise style and node callback style of usage. 
@@ -8,7 +20,7 @@ Check the example.js for the basic usage.
 
 ```javascript
 
-var ms5803 = require('.');
+var ms5803 = require('ms5803');
 var sensor = new ms5803();
 
 sensor.reset()
