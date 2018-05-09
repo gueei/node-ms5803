@@ -79,7 +79,7 @@ getADCConversion = async function (measurement, precision){
 	return new Promise(async (resolve, reject)=>{
 		try{
 			writeBytes(measurement+precision); //+ measurement, + precision);
-			await delay(10);
+			await delay(20);
 			var r = await readBytes(CMD_ADC_READ, 3);
 			result = (r[0] << 16) + (r[1]<<8) + r[2];
 			resolve(result);
